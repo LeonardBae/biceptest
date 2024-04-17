@@ -23,7 +23,7 @@ param hubRgName string = '${domainName}-gai-hub-rg'
 param devRgName string = '${domainName}-gai-dev-rg'
 param prdRgName string = '${domainName}-gai-prd-rg'
 
-//hub param
+//hub infra param
 param hubVnetName string = '${domainName}-gai-hub-vnet'
 param hubVnetAddressPrefix string
 param hubVpnSubnetAddressPrefix string
@@ -32,11 +32,28 @@ param vpnPublicIPName string = '${domainName}-gai-hub-vpn-pip'
 param vpnGWName string = '${domainName}-gai-hub-vpngw'
 param vpnSku string
 
-//dev param
+//dev infra param
 param devVnetName string = '${domainName}-gai-dev-vnet'
 param devVnetAddressPrefix string
 param devAppSubnetAddressPrefix string
 param devPESubnetAddressPrefix string
+param devJumpboxSubnetAddressPrefix string
+
+//dev openai param
+param devOpenAiName string = '${domainName}-gai-dev-openai'
+param devOpenAiLocation string
+param devOpenAiSkuName string
+param devAzureOpenAIAPIVersion string = '2023-12-01-preview'
+param devChatGptDeploymentName string = '${domainName}-gai-dev-openai'
+param devChatGptDeploymentCapacity int = 20
+param devChatGptModelName string = 'gpt-3.5-turbo'
+param devChatGptModelVersion string = '1106'
+param devEmbeddingDeploymentName string = '${domainName}-gai-dev-openai'
+param devEmbeddingDeploymentCapacity int = 30
+param devEmbeddingModelName string = 'text-embedding-ada-002'
+
+//prd openai param
+param prdChatGptModelName string = 'gpt-4-32k'
 
 resource hubRg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: hubRgName
@@ -68,6 +85,38 @@ module hubInfra 'hubinfra.bicep' = {
   }
 }
 
+module devOpenAi 'core/ai/devcognitivesvc.bicep' = {
+  name: 'devOpenai'
+  scope: devRg
+  params: {
+    devOpenAiName: devOpenAiName
+    devOpenAiLocation: devOpenAiLocation
+    devOpenAiSkuName: devOpenAiSkuName
+    deployments: [
+      {
+        name: devChatGptDeploymentName
+        model: {
+          format: 'OpenAI'
+          name: devChatGptModelName
+          version: devChatGptModelVersion
+        }
+        sku: {
+          name: 'Standard'
+          capacity: devChatGptDeploymentCapacity
+        }
+      }
+      {
+        name: devEmbeddingDeploymentName
+        model: {
+          format: 'OpenAI'
+          name: devEmbeddingModelName
+          version: '2'
+        }
+        capacity: devEmbeddingDeploymentCapacity
+      }
+    ]
+  }
+}
 module devInfra 'devinfra.bicep' = {
   name: 'devinfra'
   scope: devRg
@@ -78,6 +127,7 @@ module devInfra 'devinfra.bicep' = {
     devVnetAddressPrefix: devVnetAddressPrefix
     devAppSubnetAddressPrefix: devAppSubnetAddressPrefix
     devPESubnetAddressPrefix: devPESubnetAddressPrefix
+    devJumpboxSubnetAddressPrefix: devJumpboxSubnetAddressPrefix
   }
 }
 
