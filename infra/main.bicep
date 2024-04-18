@@ -42,7 +42,9 @@ param devJumpboxSubnetAddressPrefix string
 //dev openai param
 param devOpenAiName string = '${domainName}-gai-dev-openai'
 param devOpenAiLocation string
-param devOpenAiSkuName string
+param devOpenAiSkuName object = {
+  name: 'S0'
+}
 param devAzureOpenAIAPIVersion string = '2023-12-01-preview'
 param devChatGptDeploymentName string = '${domainName}-gai-dev-openai'
 param devChatGptDeploymentCapacity int = 20
@@ -129,6 +131,9 @@ module devInfra 'devinfra.bicep' = {
     devPESubnetAddressPrefix: devPESubnetAddressPrefix
     devJumpboxSubnetAddressPrefix: devJumpboxSubnetAddressPrefix
   }
+  dependsOn: [
+    devOpenAi
+  ]
 }
 
 /*

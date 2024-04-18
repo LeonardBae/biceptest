@@ -5,7 +5,7 @@ param devOpenAiLocation string
 param customSubDomainName string = devOpenAiName
 param deployments array = []
 param publicNetworkAccess string = 'Disabled'
-param devOpenAiSkuName string
+param devOpenAiSkuName object
 
 resource account 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: devOpenAiName
